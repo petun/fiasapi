@@ -26,6 +26,15 @@ class FiasParser
 		return $this->_apiCall($params);
 	}
 
+	public function cityInfo($cityId) {
+		$params['contentType'] = 'city';
+		$params['withParent'] = '1';
+		$params['limit'] = 1;
+		$params['cityId'] = $cityId;
+
+		return $this->_apiCall($params);
+	}
+
 	public function streetList($cityId, $limit = 10) {
 		$params['contentType'] = 'street';
 		$params['withParent'] = '0';

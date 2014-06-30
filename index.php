@@ -1,48 +1,25 @@
 <?
-
-require_once "FiasParser.class.php";
 error_reporting(E_ALL);
 
-// app params
-$token = '53b12622fca9169d6d0f2393';
-$key = 'ae5f1e9548785b0ba8cdc8a1f8f533a3119072e3';
+require_once "FiasParser.class.php";
+require_once "settings.php";
 
-
-$sqlTable  = 'fias';
-$sqlHost  = 'localhost';
-$sqlUser  = 'root';
-$sqlPass  = '';
-$sqlDb  = 'fias';
-
-$regionId = '5200000000000';
-
-$includeCity = array(
-	5200000700000,
-	5200000701200,
-	
-);
 
 $dbObjects = array();
 
 $p = new FiasParser($token, $key);
-echo "Get city list from regionId = ".$regionId . "\n";
-$data = $p->cityList($regionId, 999);
 
-
-if ($data->result) {
-	foreach ($data->result as $object) {
-		// добавляем только те что нужно
-		if (in_array($object->id, $includeCity) || true) {
-			echo "Add object ".$object->id. " name = ".$object->name . "\n";
-			$dbObjects = array_merge($dbObjects, $p->toArray($object));
-		}
+foreach ($includeCity as $cityId) {
+	echo "Grab city info. cityId = ".$cityId . "\n";
+	$city = $p->cityInfo($cityId);
+	if ($city) {
+		$dbObjects = array_merge($dbObjects, $p->toArray($city->result[0]));
 	}
 }
 
-
 $tmpObj = $dbObjects; // специально, т.к. мы добавляем в
 foreach ($tmpObj as $o) {
-	if ($o['contentType'] == 'city' && false) {
+	if ($o['contentType'] == 'city') {
 		$cityId = $o['id'];
 		echo "Add streets for cityId = ".$cityId . "\n";
 		$streets = $p->streetList($cityId, 999);
@@ -83,6 +60,7 @@ if ($dbObjects) {
 echo "Insert data into table ".$sqlTable . "\n";
 $dbLink = mysql_connect($sqlHost,$sqlUser,$sqlPass);
 mysql_select_db($sqlDb);
+mysql_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
 mysql_query("TRUNCATE TABLE `".$sqlTable."`");
 foreach ($sql as $s) {
 	mysql_query($s);
