@@ -1,5 +1,7 @@
 <?php
 
+
+//todo - https://github.com/garakh/kladrapi-php.git Забыть об этой либе и перейти на ту что по ссылке.
 class FiasParser
 {
 
@@ -50,6 +52,7 @@ class FiasParser
 			$urlPaths[] = $key . '=' . $value;
 		}
 		$url .= implode('&', $urlPaths);
+
 		return json_decode($this->_parseUrl($url));
 	}
 
@@ -95,7 +98,18 @@ class FiasParser
 
 
 	private function _parseUrl($url) {
-		return file_get_contents($url);
+		echo $url . "\n";
+
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HEADER, false);
+		//curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_VERBOSE, true); // for debug purpose
+		curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+		$data = curl_exec($curl);
+		curl_close($curl);
+		return $data;
 	}
 
 

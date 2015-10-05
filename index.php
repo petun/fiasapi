@@ -14,7 +14,14 @@ foreach ($includeCity as $cityId) {
 	$city = $p->cityInfo($cityId);
 	if ($city) {
 		$dbObjects = array_merge($dbObjects, $p->toArray($city->result[0]));
+	} else {
+		echo 'Error while get info for - ' . $cityId . "\n";
 	}
+}
+
+if (empty($dbObjects)) {
+	echo 'There is no data to import. exit...';
+	exit;
 }
 
 $tmpObj = $dbObjects; // специально, т.к. мы добавляем в
@@ -24,13 +31,15 @@ foreach ($tmpObj as $o) {
 		echo "Add streets for cityId = ".$cityId . "\n";
 		$streets = $p->streetList($cityId, 999);
 
-		if ($streets->result) {
+		if (!empty($streets) && $streets->result) {
 			echo "Find ".count($streets->result)." streets" . "\n";
 			foreach ($streets->result  as $street) {
 				$r = (array)$street;
 				$r['parentId'] = $cityId;
 				$dbObjects[] = $r;
 			}
+		} else {
+			echo 'There is no streets found for '.$cityId . "\n";
 		}
 
 	}
@@ -39,6 +48,7 @@ foreach ($tmpObj as $o) {
 
 
 // save to database
+$sql = [];
 if ($dbObjects) {
 	echo "Generate query for ".count($dbObjects) . " objects";
 	echo "memory is ".(memory_get_usage()/1024/1024). "Mb\n";
@@ -58,10 +68,10 @@ if ($dbObjects) {
 }
 
 echo "Insert data into table ".$sqlTable . "\n";
-$dbLink = mysql_connect($sqlHost,$sqlUser,$sqlPass);
-mysql_select_db($sqlDb);
-mysql_query("SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
-mysql_query("TRUNCATE TABLE `".$sqlTable."`");
+$dbLink = mysqli_connect($sqlHost,$sqlUser,$sqlPass);
+mysqli_select_db($dbLink, $sqlDb);
+mysqli_query($dbLink, "SET character_set_results = 'utf8', character_set_client = 'utf8', character_set_connection = 'utf8', character_set_database = 'utf8', character_set_server = 'utf8'");
+mysqli_query($dbLink, "TRUNCATE TABLE `".$sqlTable."`");
 foreach ($sql as $s) {
-	mysql_query($s);
+	mysqli_query($dbLink, $s);
 }
