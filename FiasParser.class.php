@@ -37,10 +37,11 @@ class FiasParser
 		return $this->_apiCall($params);
 	}
 
-	public function streetList($cityId, $limit = 10) {
+	public function streetList($cityId, $limit = 10, $offset = 0) {
 		$params['contentType'] = 'street';
 		$params['withParent'] = '0';
 		$params['limit'] = $limit;
+		$params['offset'] = $offset;
 		$params['cityId'] = $cityId;
 
 		return $this->_apiCall($params);
@@ -98,14 +99,12 @@ class FiasParser
 
 
 	private function _parseUrl($url) {
-		echo $url . "\n";
-
+		echo $url;
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HEADER, false);
-		//curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_VERBOSE, true); // for debug purpose
+	//	curl_setopt($curl, CURLOPT_VERBOSE, true); // for debug purpose
 		curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
 		$data = curl_exec($curl);
 		curl_close($curl);

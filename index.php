@@ -29,11 +29,18 @@ foreach ($tmpObj as $o) {
 	if ($o['contentType'] == 'city') {
 		$cityId = $o['id'];
 		echo "Add streets for cityId = ".$cityId . "\n";
-		$streets = $p->streetList($cityId, 999);
+		$streets = [];
+		$isNeedMore = true; $offset = 0; $limit = 400;
+		while ($isNeedMore) {
+			$streetsResult = $p->streetList($cityId, $limit, $offset++ * $limit);
+			$streets[] = $streetsResult->result;
+			$isNeedMore = count($streetsResult->result) == 400;
+		}
 
-		if (!empty($streets) && $streets->result) {
-			echo "Find ".count($streets->result)." streets" . "\n";
-			foreach ($streets->result  as $street) {
+		//var_dump( $streets);
+		if (!empty($streets)) {
+			echo "Find ".count($streets)." streets" . "\n";
+			foreach ($streets  as $street) {
 				$r = (array)$street;
 				$r['parentId'] = $cityId;
 				$dbObjects[] = $r;
@@ -41,7 +48,6 @@ foreach ($tmpObj as $o) {
 		} else {
 			echo 'There is no streets found for '.$cityId . "\n";
 		}
-
 	}
 }
 
@@ -50,7 +56,7 @@ foreach ($tmpObj as $o) {
 // save to database
 $sql = [];
 if ($dbObjects) {
-	echo "Generate query for ".count($dbObjects) . " objects";
+	echo "Generate query for ".count($dbObjects) . " objects \n";
 	echo "memory is ".(memory_get_usage()/1024/1024). "Mb\n";
 	foreach ($dbObjects as $object) {
 		$sql[] = sprintf("INSERT INTO %s (id,name,zip,type,typeShort,okato,contentType,parentId) VALUES (%s,'%s','%s','%s','%s','%s','%s',%s);",
