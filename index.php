@@ -28,25 +28,9 @@ $tmpObj = $dbObjects; // специально, т.к. мы добавляем в
 foreach ($tmpObj as $o) {
 	if ($o['contentType'] == 'city') {
 		$cityId = $o['id'];
-		echo "Add streets for cityId = ".$cityId . "\n";
-		$streets = [];
-		$isNeedMore = true; $offset = 0; $limit = 400;
-		while ($isNeedMore) {
-			$streetsResult = $p->streetList($cityId, $limit, $offset++ * $limit);
-			$streets[] = $streetsResult->result;
-			$isNeedMore = count($streetsResult->result) == 400;
-		}
-
-		//var_dump( $streets);
-		if (!empty($streets)) {
-			echo "Find ".count($streets)." streets" . "\n";
-			foreach ($streets  as $street) {
-				$r = (array)$street;
-				$r['parentId'] = $cityId;
-				$dbObjects[] = $r;
-			}
-		} else {
-			echo 'There is no streets found for '.$cityId . "\n";
+		$streets = $p->allStreets($cityId);
+		if ($streets) {
+			$dbObjects = array_merge($dbObjects, $streets);
 		}
 	}
 }

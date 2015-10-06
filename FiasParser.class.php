@@ -111,5 +111,24 @@ class FiasParser
 		return $data;
 	}
 
+	public function allStreets($cityId) {
+		echo "Add streets for cityId = ".$cityId . "\n";
+		$streets = [];
+		$isNeedMore = true; $offset = 0; $limit = 400;
+		while ($isNeedMore) {
+			$streetsResult = $this->streetList($cityId, $limit, $offset++  * $limit);
+			$streets = array_merge($streets, $streetsResult->result) ;
+			$isNeedMore = count($streetsResult->result) == 400;
+		}
+
+		$streets = array_map(function($e) use ($cityId){
+			$e = (array) $e;
+			$e['parentId'] = $cityId;
+			return $e;
+		}, $streets);
+
+		return $streets;
+	}
+
 
 }
